@@ -13,8 +13,6 @@ public class Car {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String brand;
-
     private String color;
 
     @Column(name = "brand_id")

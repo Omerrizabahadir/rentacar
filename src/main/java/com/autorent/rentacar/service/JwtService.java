@@ -23,11 +23,11 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class JwtService {
 
+    public static final String SECRET = "404D635166546A576E5A7234753778214125442A472D4B6150645267556B5870";
     private final CustomerRepository customerRepository;
 
-    public static final String SECRET = "404D635166546A576E5A7234753778214125442A472D4B6150645267556B5870";
-
     public String extractEmail(String token) {
+
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -43,6 +43,7 @@ public class JwtService {
                 .parseSignedClaims(token)
                 .getPayload();
     }
+
     public LoginDto generateToken(Authentication authentication) {
         LoginDto loginDto = new LoginDto();
         String authenticationName = authentication.getName();
@@ -51,13 +52,14 @@ public class JwtService {
         Map<String, Object> claims = new HashMap<>();
         claims.put("authorities", authentication.getAuthorities());
         claims.put("name", authenticationName);
-        if(customerOptional.isPresent()) {
+        if (customerOptional.isPresent()) {
             loginDto.setCustomerId(customerOptional.get().getId());
         }
         loginDto.setToken(createToken(claims, authenticationName));
 
         return loginDto;
     }
+
     private String createToken(Map<String, Object> claims, String name) {
         return Jwts.builder()
                 .claims(claims)
@@ -73,6 +75,7 @@ public class JwtService {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET);
         return Keys.hmacShaKeyFor(keyBytes);
     }
+
     public boolean validateToken(String token, UserDetails userDetails) {
         final String email = extractEmail(token);
         return (email.equals(userDetails.getUsername()) && !isTokenExpired(token));

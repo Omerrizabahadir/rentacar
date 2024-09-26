@@ -10,11 +10,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class UserInfoDetails  implements UserDetails {
+public class UserInfoDetails implements UserDetails {
 
-    private String email;
-    private String password;
-    private List<GrantedAuthority> authorityList;
+    private final String email;
+    private final String password;
+    private final List<GrantedAuthority> authorityList;
 
     public UserInfoDetails(Customer customerInfo) {
         email = customerInfo.getEmail();
