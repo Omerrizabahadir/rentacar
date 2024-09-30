@@ -11,6 +11,5 @@ public class Address {
 
     private String city;
     private String district;
-    private String pickupAddress;
-    private String returnAddress;
+    private String addressLine;
 }

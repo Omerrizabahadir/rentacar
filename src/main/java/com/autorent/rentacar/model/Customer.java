@@ -20,6 +20,8 @@ public class Customer {
     @Column(name = "last_name")
     private String lastName;
 
+    private Address address;
+
     private String email;
 
     private String password;

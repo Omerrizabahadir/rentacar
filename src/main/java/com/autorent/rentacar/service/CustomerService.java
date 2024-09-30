@@ -1,10 +1,12 @@
 package com.autorent.rentacar.service;
 
 import com.autorent.rentacar.dto.AuthDto;
+import com.autorent.rentacar.dto.CustomerDto;
 import com.autorent.rentacar.dto.LoginDto;
 import com.autorent.rentacar.enums.RoleEnum;
 import com.autorent.rentacar.model.Customer;
 import com.autorent.rentacar.repository.CustomerRepository;
+import com.autorent.rentacar.util.CustomerMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,13 +32,13 @@ public class CustomerService {
     @Autowired
     private JwtService jwtService;
 
-    public Customer createCustomer(Customer customer){
+    public CustomerDto createCustomer(Customer customer){
 
         if(Objects.isNull(customer.getRoles())){
             customer.setRoles(RoleEnum.ROLE_USER.toString());
         }
         customer.setPassword(passwordEncoder.encode(customer.getPassword()));
-        return customerRepository.save(customer);
+        return CustomerMapper.INSTANCE.customerToCustomerDto(customerRepository.save(customer));
     }
 
     public LoginDto login(AuthDto authDto){

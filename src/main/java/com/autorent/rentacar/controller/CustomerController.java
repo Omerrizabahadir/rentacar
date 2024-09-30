@@ -1,6 +1,7 @@
 package com.autorent.rentacar.controller;
 
 import com.autorent.rentacar.dto.AuthDto;
+import com.autorent.rentacar.dto.CustomerDto;
 import com.autorent.rentacar.dto.LoginDto;
 import com.autorent.rentacar.model.Customer;
 import com.autorent.rentacar.service.CustomerService;
@@ -20,7 +21,7 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @PostMapping("/register")
-    public ResponseEntity<Customer> createCustomer(@RequestBody Customer customer){
+    public ResponseEntity<CustomerDto> createCustomer(@RequestBody Customer customer){
         return new ResponseEntity<>(customerService.createCustomer(customer), HttpStatus.CREATED);
     }
     @PostMapping("/login")

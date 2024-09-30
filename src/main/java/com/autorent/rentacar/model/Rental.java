@@ -5,9 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "rental")
+@Table(name = "rentals")
 @Getter
 @Setter
 public class Rental {
@@ -16,21 +17,30 @@ public class Rental {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "customer_name")
+    @Column(name = "customer_id")
     private Long customerId;
 
-    @Column(name = "rental_id")
-    private Long rentalId;
-
-    private Double price;
+    @Column(name = "car_id")
+    private Long carId;
 
     private Double totalPrice;
 
-    private LocalDate startDate;
+    @Column(name = "start_rental_date")
+    private LocalDate startRentalDate;
 
-    private LocalDate endDate;
+    @Column(name = "end_rental_date")
+    private LocalDate endRentalDate;
 
-    @Column(name = "rental_period")
-    private int rentalPeriod;
+    @Column(name = "total_rental_period_days")
+    private long totalRentalPeriodDays;
 
+    @Column(name = "pickup_address")
+    private String pickupAddress;
+
+    @Column(name = "return_address")
+    private String returnAddress;
+
+    private LocalDateTime rentalDate;
+
+    private int quantity;
 }
