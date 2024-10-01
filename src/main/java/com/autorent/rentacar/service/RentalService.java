@@ -24,11 +24,15 @@ import java.util.List;
 @Service
 @Slf4j
 public class RentalService {
+
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+
     @Autowired
     private CarRepository carRepository;
+
     @Autowired
     private CustomerRepository customerRepository;
+
     @Autowired
     private RentalRepository rentalRepository;
 
@@ -70,6 +74,7 @@ public class RentalService {
 
         return true;
     }
+
     private void carUnitStockCheck(List<RentalCarInfo> rentalCarInfoList) {
         rentalCarInfoList.forEach(carInfo -> {
             Car car = carRepository.findById(carInfo.getCarId())
