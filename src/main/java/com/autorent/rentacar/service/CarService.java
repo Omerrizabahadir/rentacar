@@ -1,5 +1,6 @@
 package com.autorent.rentacar.service;
 
+import com.autorent.rentacar.enums.CarStatus;
 import com.autorent.rentacar.exception.CarNotFoundException;
 import com.autorent.rentacar.model.Car;
 import com.autorent.rentacar.repository.CarRepository;
@@ -24,7 +25,15 @@ public class CarService {
     @Autowired
     private CarRepository carRepository;
 
+    @Autowired
+    private RentalService rentalService;
+
+
     public Car createCar(MultipartFile file, Car car) {
+        car.setActive(true); // Araba kullanılabilir
+        car.setIsRented(false); // Araba kiralanmamış
+        car.setCarStatus(CarStatus.AVAILABLE);
+
         if (Objects.nonNull(file)) {
             String imagePath = saveFile(file, car.getModelName());
             car.setImage(imagePath);
@@ -61,25 +70,36 @@ public class CarService {
     public List<Car> getAllCarList() {
         return carRepository.getAllCarList();
     }
-    public Car updateCar(MultipartFile file, Car car){
-        if(Objects.nonNull(file)){
-            String imagePath = saveFile(file,car.getModelName());
+
+    public Car updateCar(MultipartFile file, Car car) {
+        if (Objects.nonNull(file)) {
+            String imagePath = saveFile(file, car.getModelName());
             car.setImage(imagePath);
-        }else {
+        } else {
             Car existCar = carRepository.findById(car.getId()).orElseThrow(() -> new CarNotFoundException("car not found id : " + car.getId()));
         }
         return carRepository.save(car);
     }
-    public void deleteCar(Long id){
+
+    public void deleteCar(Long id) {
         Car car = carRepository.findById(id).orElseThrow(() -> new CarNotFoundException(id + "car is not found"));
-        try{
-           Files.delete(Paths.get(car.getImage()));
-        }catch (IOException e){
-            throw  new RuntimeException("IO Exception is occured while deleting image of " + car.getModelName());
+        try {
+            Files.delete(Paths.get(car.getImage()));
+        } catch (IOException e) {
+            throw new RuntimeException("IO Exception is occured while deleting image of " + car.getModelName());
         }
         carRepository.deleteById(id);
     }
-    public void activeOrDeActiveToRentalCar(Long id, boolean isActive ){
+
+    public void activeOrDeActiveToRentalCar(Long id, boolean isActive) {
+
         carRepository.updateCarActive(isActive, id);
     }
+
+    public String checkIfCarRented(Long carId) {
+        Car car = carRepository.findById(carId).orElseThrow(() -> new CarNotFoundException("Car not found"));
+        return car.getIsRented() ? "car has been rented." : "car can be rented.";
+    }
+
+
 }

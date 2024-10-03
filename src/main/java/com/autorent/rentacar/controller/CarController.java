@@ -2,6 +2,10 @@ package com.autorent.rentacar.controller;
 
 import com.autorent.rentacar.model.Car;
 import com.autorent.rentacar.service.CarService;
+import com.autorent.rentacar.service.RentalService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -18,6 +22,9 @@ public class CarController {
 
     @Autowired
     private CarService carService;
+
+    @Autowired
+    private RentalService rentalService;
 
     @PostMapping(value = "/create", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
@@ -72,4 +79,23 @@ public class CarController {
         carService.activeOrDeActiveToRentalCar(id, false);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @GetMapping("/select/{id}")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @Operation(summary = "Select a car", description = "Select a car by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Car selected successfully"),
+            @ApiResponse(responseCode = "400", description = "The car you chose was rented by someone else")
+    })
+    public ResponseEntity<String> selectCar(@PathVariable("id") Long carId) {
+
+        String availabilityMessage = carService.checkIfCarRented(carId);
+
+        if (availabilityMessage.equals("car has been rented.")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(availabilityMessage);
+        }
+        return ResponseEntity.ok("The car can be rented.");
+    }
+
 }
+

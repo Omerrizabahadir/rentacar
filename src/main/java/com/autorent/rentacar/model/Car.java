@@ -29,11 +29,13 @@ public class Car {
     @Column(name = "car_status")
     private CarStatus carStatus; //beklemede , kiralamaya hazır,rezerve edildi
 
-    @Column(name = "active_to_rental")
-    private Boolean activeToRental;
+    private Boolean active;
+
+    @Column(name = "is_rented")
+    private Boolean isRented;
 
     @Column(name = "car_available_stock")
-    private  Long carAvailableStock;
+    private Long carAvailableStock;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "gear_box")
