@@ -1,12 +1,9 @@
 package com.autorent.rentacar.repository;
 
 import com.autorent.rentacar.model.Rental;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.repository.CrudRepository;
 
-@Repository
-public interface RentalRepository extends JpaRepository<Rental,Long> {
-
+public interface RentalRepository extends CrudRepository<Rental, Long> {
 
 
 }

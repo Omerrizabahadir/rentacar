@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +25,6 @@ import java.util.List;
 @Service
 @Slf4j
 public class RentalService {
-
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
     @Autowired
     private CarRepository carRepository;
@@ -38,7 +35,7 @@ public class RentalService {
     @Autowired
     private RentalRepository rentalRepository;
 
-   
+
     public void checkCarAvailability(Long carId, boolean isActive) {
         Car car = carRepository.findById(carId)
                 .orElseThrow(() -> new CarNotFoundException("Car not found"));
@@ -68,42 +65,65 @@ public class RentalService {
         });
     }
 
-    public Boolean rent(RentalRequest rentalRequest) {
-        log.info("Rental request time {} customer :{}", LocalDateTime.now(), rentalRequest.getCustomerId());
-        carUnitStockCheck(rentalRequest.getRentalList());
+public Boolean rent(RentalRequest rentalRequest) {
+    log.info("Rental request time {} customer :{}", LocalDateTime.now(), rentalRequest.getCustomerId());
 
-        List<Double> rentalTotalCostList = new ArrayList<>();
-        rentalRequest.getRentalList().forEach(rentalRequestInfo -> {
+    // Her araç için kiralama kontrolü
+    for (RentalCarInfo rentalCarInfo : rentalRequest.getRentalList()) {
+        Car car = carRepository.findById(rentalCarInfo.getCarId())
+                .orElseThrow(() -> new CarNotFoundException("Car not found, id : " + rentalCarInfo.getCarId()));
 
-            Rental rental = new Rental();
-            Car car = carRepository.findById(rentalRequestInfo.getCarId()).orElseThrow(() -> new CarNotFoundException("car not found, id : " + rentalRequestInfo.getCarId()));
-            Long rentalDays = ChronoUnit.DAYS.between(rentalRequestInfo.getStartRentalDate(), rentalRequestInfo.getEndRentalDate());
-            Double totalPrice = rentalDays * car.getDailyPrice();
-            rentalTotalCostList.add(totalPrice);
-            rental.setTotalPrice(totalPrice);
-
-            rental.setCarId(rentalRequestInfo.getCarId());
-            rental.setCustomerId(rentalRequest.getCustomerId());
-            rental.setStartRentalDate(LocalDateTime.parse(formatter.format(LocalDateTime.now()), formatter));
-            rental.setEndRentalDate(LocalDateTime.parse(formatter.format(LocalDateTime.now()), formatter));
-            rental.setTotalRentalPeriodDays(rentalDays);
-            rental.setQuantity(1);
-
-            rental.setPickupAddress(rentalRequestInfo.getPickupAddress());
-            rental.setReturnAddress(rentalRequestInfo.getReturnAddress());
-
-            if (car.getCarAvailableStock() - rentalRequestInfo.getQuantity() == 0) {
-                car.setIsRented(false);
-            }
-            rentalRepository.save(rental);
-
-            car.setCarAvailableStock(car.getCarAvailableStock());
-            carRepository.save(car);
-        });
-        Customer customer = customerRepository.findById(rentalRequest.getCustomerId()).orElseThrow(() -> new CustomerNotFoundException(rentalRequest.getCustomerId() + "customer not found!"));
-
-        return true;
+        // Araç zaten kiralanmışsa hata fırlat
+        if (car.getIsRented()) {
+            throw new InsufficientCarStockException("The car with id " + rentalCarInfo.getCarId() + " is already rented.");
+        }
     }
+
+    // Araç stok kontrolü
+    carUnitStockCheck(rentalRequest.getRentalList());
+
+    List<Double> rentalTotalCostList = new ArrayList<>();
+    rentalRequest.getRentalList().forEach(rentalRequestInfo -> {
+        Rental rental = new Rental();
+        Car car = carRepository.findById(rentalRequestInfo.getCarId())
+                .orElseThrow(() -> new CarNotFoundException("Car not found, id : " + rentalRequestInfo.getCarId()));
+
+        Long rentalDays = ChronoUnit.DAYS.between(rentalRequestInfo.getStartRentalDate(), rentalRequestInfo.getEndRentalDate());
+        Double totalPrice = rentalDays * car.getDailyPrice();
+        rentalTotalCostList.add(totalPrice);
+        rental.setTotalPrice(totalPrice);
+
+        rental.setCarId(rentalRequestInfo.getCarId());
+        rental.setCustomerId(rentalRequest.getCustomerId());
+
+        LocalDateTime startRentalDateTime = rentalRequestInfo.getStartRentalDate()
+                .atTime(LocalDateTime.now().getHour(), LocalDateTime.now().getMinute(), LocalDateTime.now().getSecond());
+        LocalDateTime endRentalDateTime = rentalRequestInfo.getEndRentalDate()
+                .atTime(LocalDateTime.now().getHour(), LocalDateTime.now().getMinute(), LocalDateTime.now().getSecond());
+
+        rental.setStartRentalDate(startRentalDateTime);
+        rental.setEndRentalDate(endRentalDateTime);
+
+        rental.setTotalRentalPeriodDays(rentalDays);
+        rental.setQuantity(rentalRequestInfo.getQuantity());
+
+        rental.setPickupAddress(rentalRequestInfo.getPickupAddress());
+        rental.setReturnAddress(rentalRequestInfo.getReturnAddress());
+
+        if (car.getCarAvailableStock() == 0) {
+            car.setIsRented(true);
+            car.setActive(false);
+            car.setCarStatus(CarStatus.RENTED);
+        }
+        rentalRepository.save(rental);
+        carRepository.save(car);
+    });
+
+    Customer customer = customerRepository.findById(rentalRequest.getCustomerId())
+            .orElseThrow(() -> new CustomerNotFoundException(rentalRequest.getCustomerId() + " customer not found!"));
+
+    return true;
+}
 
     public void carUnitStockCheck(List<RentalCarInfo> rentalCarInfoList) {
         rentalCarInfoList.forEach(carInfo -> {
@@ -118,6 +138,7 @@ public class RentalService {
             carRepository.save(car);
         });
     }
-
 }
+
+
 
