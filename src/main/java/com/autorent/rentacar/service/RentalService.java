@@ -134,6 +134,8 @@ public Boolean rent(RentalRequest rentalRequest) {
                 car.setActive(false);
                 car.setCarStatus(CarStatus.RENTED);
                 car.setCarAvailableStock(car.getCarAvailableStock() - carInfo.getQuantity());
+            } else if (car.getCarAvailableStock() - carInfo.getQuantity() > 0) {
+                car.setCarAvailableStock(car.getCarAvailableStock() - carInfo.getQuantity());
             }
             carRepository.save(car);
         });
