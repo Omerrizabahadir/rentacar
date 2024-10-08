@@ -36,66 +36,84 @@ public class DataLoader implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        Address address1 = new Address();
-        address1.setCity("Ankara");
-        address1.setAddressLine("Örnek Sitesi Örnek Blokları kat:2,no:6");
-        address1.setDistrict("Çankaya/Çayyolu");
 
-        Customer adminUser = new Customer();
-        adminUser.setFirstName("Ömer Rıza");
-        adminUser.setLastName("Bahadır");
-        adminUser.setRoles("ROLE_ADMIN");
-        adminUser.setAddress(address1);
-        adminUser.setEmail("omrbahadir@gmail.com");
-        adminUser.setPassword(passwordEncoder.encode("123456"));
+       if(!customerRepository.existsByEmail("omrbahadir@gmail.com")){
+           Address address1 = new Address();
+           address1.setCity("Ankara");
+           address1.setAddressLine("Örnek Sitesi Örnek Blokları kat:2,no:6");
+           address1.setDistrict("Çankaya/Çayyolu");
+
+           Customer adminUser = new Customer();
+           adminUser.setFirstName("Ömer Rıza");
+           adminUser.setLastName("Bahadır");
+           adminUser.setRoles("ROLE_ADMIN");
+           adminUser.setAddress(address1);
+           adminUser.setEmail("omrbahadir@gmail.com");
+           adminUser.setPassword(passwordEncoder.encode("123456"));
+
+           customerRepository.save(adminUser);
+       }
+
+        if (!customerRepository.existsByEmail("omrbahadir@hotmail.com")){
+            Address address2 = new Address();
+            address2.setCity("Ankara");
+            address2.setDistrict("Çankaya/Çayyolu");
+            address2.setAddressLine("A Sitesi B/blok kat:3, no:9");
+
+            Customer clientUser = new Customer();
+            clientUser.setFirstName("Ömer Rıza");
+            clientUser.setLastName("Bahadır");
+            clientUser.setEmail("omrbahadir@hotmail.com");
+            clientUser.setPassword(passwordEncoder.encode("123456"));
+            clientUser.setRoles("ROLE_USER");
+            clientUser.setAddress(address2);
+
+            customerRepository.save(clientUser);
+        }
 
 
-        Address address2 = new Address();
-        address2.setCity("Ankara");
-        address2.setDistrict("Çankaya/Çayyolu");
-        address2.setAddressLine("A Sitesi B/blok kat:3, no:9");
+        if (!brandRepository.existsByName("Renault")) {
+            Brand brand = new Brand();
+            brand.setName("Renault");
+            brandRepository.save(brand);
+        }
 
-        Customer clientUser = new Customer();
-        clientUser.setFirstName("Ömer Rıza");
-        clientUser.setLastName("Bahadır");
-        clientUser.setEmail("omrbahadir@hotmail.com");
-        clientUser.setPassword(passwordEncoder.encode("123456"));
-        clientUser.setRoles("ROLE_USER");
-        clientUser.setAddress(address2);
+        Brand brand = brandRepository.findByName("Renault");
 
-        customerRepository.saveAll(Arrays.asList(adminUser, clientUser));
+        if (brand != null) {
+            if (!carRepository.existsByModelName("clio")) {
+                Car car1 = new Car();
+                car1.setBrandId(brand.getId());
+                car1.setModelName("clio");
+                car1.setColor(Color.BLUE);
+                car1.setDailyPrice(1100);
+                car1.setCarAvailableStock(3L);
+                car1.setCarStatus(CarStatus.AVAILABLE);
+                car1.setActive(true);
+                car1.setIsRented(false);
+                car1.setMileage(11234);
+                car1.setGearBox(GearBox.MANUAL);
+                car1.setImage("uploads/clio.jpeg");
 
-        Brand brand = new Brand();
-        brand.setName("Renault");
-        brandRepository.save(brand);
+                carRepository.save(car1);
+            }
 
+            if (!carRepository.existsByModelName("fluence")) {
+                Car car2 = new Car();
+                car2.setBrandId(brand.getId());
+                car2.setModelName("fluence");
+                car2.setColor(Color.BLACK);
+                car2.setDailyPrice(1500);
+                car2.setCarAvailableStock(5L);
+                car2.setCarStatus(CarStatus.AVAILABLE);
+                car2.setActive(true);
+                car2.setIsRented(false);
+                car2.setMileage(10234);
+                car2.setGearBox(GearBox.MANUAL);
+                car2.setImage("uploads/fluence.jpeg");
 
-        Car car1 = new Car();
-        car1.setBrandId(brand.getId());
-        car1.setModelName("clio");
-        car1.setColor(Color.BLUE);
-        car1.setDailyPrice(1100);
-        car1.setCarAvailableStock(3L);
-        car1.setCarStatus(CarStatus.AVAILABLE);
-        car1.setActive(true);
-        car1.setIsRented(false);
-        car1.setMileage(11234);
-        car1.setGearBox(GearBox.MANUAL);
-        car1.setImage("uploads/clio.jpeg");
-
-        Car car2 = new Car();
-        car2.setBrandId(brand.getId());
-        car2.setModelName("fluence");
-        car2.setColor(Color.BLACK);
-        car2.setDailyPrice(1500);
-        car2.setCarAvailableStock(5L);
-        car2.setCarStatus(CarStatus.AVAILABLE);
-        car2.setActive(true);
-        car2.setIsRented(false);
-        car2.setMileage(10234);
-        car2.setGearBox(GearBox.MANUAL);
-        car2.setImage("uploads/fluence.jpeg");
-
-        carRepository.saveAll(Arrays.asList(car1, car2));
+                carRepository.save(car2);
+            }
+        }
     }
 }

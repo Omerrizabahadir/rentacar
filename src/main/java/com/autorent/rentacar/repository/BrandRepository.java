@@ -13,5 +13,6 @@ public interface BrandRepository extends JpaRepository<Brand,Long> {
 
     Optional<Brand> findBrandByName(String name);
 
-
+    boolean existsByName(String name);
+    Brand findByName(String name);
 }

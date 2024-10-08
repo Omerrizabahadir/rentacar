@@ -32,4 +32,6 @@ public interface CarRepository extends JpaRepository<Car, Long> {
     @Query("SELECT r from Rental r WHERE r.carId = :carId AND r.endRentalDate > :now")
     List<Rental> findActiveRentalsByCarId(@Param("carId") Long carId,
                                           @Param("now") LocalDateTime now);
+
+    boolean existsByModelName(String modelName);
 }
