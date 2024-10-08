@@ -15,8 +15,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-
 @Component
 public class DataLoader implements CommandLineRunner {
 
@@ -37,24 +35,24 @@ public class DataLoader implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
 
-       if(!customerRepository.existsByEmail("omrbahadir@gmail.com")){
-           Address address1 = new Address();
-           address1.setCity("Ankara");
-           address1.setAddressLine("Örnek Sitesi Örnek Blokları kat:2,no:6");
-           address1.setDistrict("Çankaya/Çayyolu");
+        if (!customerRepository.existsByEmail("omrbahadir@gmail.com")) {
+            Address address1 = new Address();
+            address1.setCity("Ankara");
+            address1.setAddressLine("Örnek Sitesi Örnek Blokları kat:2,no:6");
+            address1.setDistrict("Çankaya/Çayyolu");
 
-           Customer adminUser = new Customer();
-           adminUser.setFirstName("Ömer Rıza");
-           adminUser.setLastName("Bahadır");
-           adminUser.setRoles("ROLE_ADMIN");
-           adminUser.setAddress(address1);
-           adminUser.setEmail("omrbahadir@gmail.com");
-           adminUser.setPassword(passwordEncoder.encode("123456"));
+            Customer adminUser = new Customer();
+            adminUser.setFirstName("Ömer Rıza");
+            adminUser.setLastName("Bahadır");
+            adminUser.setRoles("ROLE_ADMIN");
+            adminUser.setAddress(address1);
+            adminUser.setEmail("omrbahadir@gmail.com");
+            adminUser.setPassword(passwordEncoder.encode("123456"));
 
-           customerRepository.save(adminUser);
-       }
+            customerRepository.save(adminUser);
+        }
 
-        if (!customerRepository.existsByEmail("omrbahadir@hotmail.com")){
+        if (!customerRepository.existsByEmail("omrbahadir@hotmail.com")) {
             Address address2 = new Address();
             address2.setCity("Ankara");
             address2.setDistrict("Çankaya/Çayyolu");
