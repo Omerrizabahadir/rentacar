@@ -29,7 +29,7 @@ public class CarController {
     @PostMapping(value = "/create", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Car> createCar(@RequestPart("file") MultipartFile file,
-                                         @ModelAttribute("car") Car car) {
+                                         @ModelAttribute Car car) {
 
         return new ResponseEntity<>(carService.createCar(file, car), HttpStatus.CREATED);
     }
@@ -54,7 +54,7 @@ public class CarController {
 
     @PutMapping(value = "/update", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<Car> updateCar(@RequestParam(value = "file", required = false) MultipartFile file,
+    public ResponseEntity<Car> updateCar(@RequestPart(value = "file", required = false) MultipartFile file,
                                          @ModelAttribute Car car) {
         return new ResponseEntity<>(carService.updateCar(file, car), HttpStatus.OK);
     }
