@@ -100,6 +100,4 @@ public class CarService {
         Car car = carRepository.findById(carId).orElseThrow(() -> new CarNotFoundException("Car not found"));
         return car.getIsRented() ? "car has been rented." : "car can be rented.";
     }
-
-
 }

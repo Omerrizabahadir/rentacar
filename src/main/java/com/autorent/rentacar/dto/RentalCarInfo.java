@@ -1,5 +1,6 @@
 package com.autorent.rentacar.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,10 +12,11 @@ import java.time.LocalDateTime;
 public class RentalCarInfo {
     private Long carId;
     private  int quantity;
-    private LocalDate startRentalDate;
-    private LocalDate endRentalDate;
+    private LocalDateTime startRentalDate;
+    private LocalDateTime endRentalDate;
     private long rentalPeriod;
     private String pickupAddress;
     private String returnAddress;
+
 
 }

@@ -18,30 +18,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
 @Slf4j
+@Service
 public class RentalService {
 
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
     @Autowired
     private CarRepository carRepository;
-
     @Autowired
     private CustomerRepository customerRepository;
-
     @Autowired
     private RentalRepository rentalRepository;
-
 
     public void checkCarAvailability(Long carId, boolean isActive) {
         Car car = carRepository.findById(carId)
                 .orElseThrow(() -> new CarNotFoundException("Car not found"));
 
         // Mevcut stok kontrolü
-        if (car.getCarAvailableStock() < 0) {
+        if (car.getCarAvailableStock() <= 0) {
             throw new InsufficientCarStockException("No available stock for this car.");
         }
 
@@ -53,79 +52,64 @@ public class RentalService {
         }
     }
 
-    private void productUnitStockCheck(List<RentalCarInfo> rentalCarInfoList) {
-        rentalCarInfoList.forEach(carInfo -> {
-            Car car = carRepository.findById(carInfo.getCarId())
-                    .orElseThrow(() -> new CarNotFoundException("car not found, id : " + carInfo.getCarId()));
+    public Boolean rent(RentalRequest rentalRequest) {
+        log.info("Rental request time {} customer :{}", LocalDateTime.now(), rentalRequest.getCustomerId());
 
-            if (car.getCarAvailableStock() - carInfo.getQuantity() < 0) {
-                log.error("the car stock insufficient id : " + carInfo.getCarId());
-                throw new InsufficientCarStockException("the car stock insufficient productName : " + car.getModelName());
+        for (RentalCarInfo rentalCarInfo : rentalRequest.getRentalList()) {
+            Car car = carRepository.findById(rentalCarInfo.getCarId())
+                    .orElseThrow(() -> new CarNotFoundException("Car not found, id : " + rentalCarInfo.getCarId()));
+
+            if (car.getIsRented()) {
+                throw new InsufficientCarStockException("The car with id " + rentalCarInfo.getCarId() + " is already rented.");
             }
+        }
+
+        carUnitStockCheck(rentalRequest.getRentalList());
+
+        List<Double> rentalTotalCostList = new ArrayList<>();
+        rentalRequest.getRentalList().forEach(rentalRequestInfo -> {
+            Rental rental = new Rental();
+            Car car = carRepository.findById(rentalRequestInfo.getCarId())
+                    .orElseThrow(() -> new CarNotFoundException("Car not found, id : " + rentalRequestInfo.getCarId()));
+
+            LocalDateTime startRentalDate = LocalDateTime.now();
+            rental.setStartRentalDate(startRentalDate);
+
+            long rentalDays = rentalRequestInfo.getRentalPeriod();
+            LocalDateTime userEndRentalDate = startRentalDate.plusDays(rentalDays);
+            rental.setEndRentalDate(userEndRentalDate);
+
+
+            long totalRentalDays = ChronoUnit.DAYS.between(startRentalDate.toLocalDate(), userEndRentalDate.toLocalDate());
+
+
+            Double totalPrice = rentalDays * car.getDailyPrice();
+            rentalTotalCostList.add(totalPrice);
+            rental.setTotalPrice(totalPrice);
+
+            rental.setCarId(rentalRequestInfo.getCarId());
+            rental.setCustomerId(rentalRequest.getCustomerId());
+            rental.setQuantity(rentalRequestInfo.getQuantity());
+            rental.setTotalRentalPeriodDays(rentalDays);
+            rental.setPickupAddress(rentalRequestInfo.getPickupAddress());
+            rental.setReturnAddress(rentalRequestInfo.getReturnAddress());
+
+            if (car.getCarAvailableStock() == 0) {
+                car.setIsRented(true);
+                car.setActive(false);
+                car.setCarStatus(CarStatus.RENTED);
+            }
+            rentalRepository.save(rental);
+            carRepository.save(car);
         });
+
+        Customer customer = customerRepository.findById(rentalRequest.getCustomerId())
+                .orElseThrow(() -> new CustomerNotFoundException(rentalRequest.getCustomerId() + " customer not found!"));
+
+        return true;
     }
 
-public Boolean rent(RentalRequest rentalRequest) {
-    log.info("Rental request time {} customer :{}", LocalDateTime.now(), rentalRequest.getCustomerId());
-
-    // Her araç için kiralama kontrolü
-    for (RentalCarInfo rentalCarInfo : rentalRequest.getRentalList()) {
-        Car car = carRepository.findById(rentalCarInfo.getCarId())
-                .orElseThrow(() -> new CarNotFoundException("Car not found, id : " + rentalCarInfo.getCarId()));
-
-        // Araç zaten kiralanmışsa hata fırlat
-        if (car.getIsRented()) {
-            throw new InsufficientCarStockException("The car with id " + rentalCarInfo.getCarId() + " is already rented.");
-        }
-    }
-
-    // Araç stok kontrolü
-    carUnitStockCheck(rentalRequest.getRentalList());
-
-    List<Double> rentalTotalCostList = new ArrayList<>();
-    rentalRequest.getRentalList().forEach(rentalRequestInfo -> {
-        Rental rental = new Rental();
-        Car car = carRepository.findById(rentalRequestInfo.getCarId())
-                .orElseThrow(() -> new CarNotFoundException("Car not found, id : " + rentalRequestInfo.getCarId()));
-
-        Long rentalDays = ChronoUnit.DAYS.between(rentalRequestInfo.getStartRentalDate(), rentalRequestInfo.getEndRentalDate());
-        Double totalPrice = rentalDays * car.getDailyPrice();
-        rentalTotalCostList.add(totalPrice);
-        rental.setTotalPrice(totalPrice);
-
-        rental.setCarId(rentalRequestInfo.getCarId());
-        rental.setCustomerId(rentalRequest.getCustomerId());
-
-        LocalDateTime startRentalDateTime = rentalRequestInfo.getStartRentalDate()
-                .atTime(LocalDateTime.now().getHour(), LocalDateTime.now().getMinute(), LocalDateTime.now().getSecond());
-        LocalDateTime endRentalDateTime = rentalRequestInfo.getEndRentalDate()
-                .atTime(LocalDateTime.now().getHour(), LocalDateTime.now().getMinute(), LocalDateTime.now().getSecond());
-
-        rental.setStartRentalDate(startRentalDateTime);
-        rental.setEndRentalDate(endRentalDateTime);
-
-        rental.setTotalRentalPeriodDays(rentalDays);
-        rental.setQuantity(rentalRequestInfo.getQuantity());
-
-        rental.setPickupAddress(rentalRequestInfo.getPickupAddress());
-        rental.setReturnAddress(rentalRequestInfo.getReturnAddress());
-
-        if (car.getCarAvailableStock() == 0) {
-            car.setIsRented(true);
-            car.setActive(false);
-            car.setCarStatus(CarStatus.RENTED);
-        }
-        rentalRepository.save(rental);
-        carRepository.save(car);
-    });
-
-    Customer customer = customerRepository.findById(rentalRequest.getCustomerId())
-            .orElseThrow(() -> new CustomerNotFoundException(rentalRequest.getCustomerId() + " customer not found!"));
-
-    return true;
-}
-
-    public void carUnitStockCheck(List<RentalCarInfo> rentalCarInfoList) {
+    private void carUnitStockCheck(List<RentalCarInfo> rentalCarInfoList) {
         rentalCarInfoList.forEach(carInfo -> {
             Car car = carRepository.findById(carInfo.getCarId())
                     .orElseThrow(() -> new CarNotFoundException("Car not found, id : " + carInfo.getCarId()));
@@ -141,6 +125,3 @@ public Boolean rent(RentalRequest rentalRequest) {
         });
     }
 }
-
-
-
