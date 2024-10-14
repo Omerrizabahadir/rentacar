@@ -10,4 +10,5 @@ import java.util.List;
 public class RentalRequest {
     private Long customerId;
     private List<RentalCarInfo> rentalList;
+
 }

@@ -1,6 +1,5 @@
 package com.autorent.rentacar.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,11 +24,9 @@ public class Rental {
 
     private Double totalPrice;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     @Column(name = "start_rental_date")
     private LocalDateTime startRentalDate;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     @Column(name = "end_rental_date")
     private LocalDateTime endRentalDate;
 
