@@ -63,7 +63,7 @@ public class CarController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteCar(@PathVariable("id") Long id) {
         carService.deleteCar(id);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PutMapping("active/{id}")
