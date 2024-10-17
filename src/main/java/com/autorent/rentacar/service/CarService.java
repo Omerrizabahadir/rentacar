@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class CarService {
@@ -30,12 +31,12 @@ public class CarService {
 
 
     public Car createCar(MultipartFile file, Car car) {
-        car.setActive(true); // Araba kullanılabilir
-        car.setIsRented(false); // Araba kiralanmamış
-        car.setCarStatus(CarStatus.AVAILABLE);
 
         if (Objects.nonNull(file)) {
             String imagePath = saveFile(file, car.getModelName());
+            car.setActive(true); // Araba kullanılabilir
+            car.setIsRented(false); // Araba kiralanmamış
+            car.setCarStatus(CarStatus.AVAILABLE);
             car.setImage(imagePath);
         } else {
             Car existCar = carRepository.findById(car.getId()).orElseThrow(() -> new CarNotFoundException("car not found id :" + car.getId()));
@@ -70,16 +71,36 @@ public class CarService {
     public List<Car> getAllCarList() {
         return carRepository.getAllCarList();
     }
+    
+       public Car updateCar(MultipartFile file, Car car) {
+       Car existingcar = carRepository.findById(car.getId())
+               .orElseThrow(() -> new CarNotFoundException("Product not found with id: " + car.getId()));
 
-    public Car updateCar(MultipartFile file, Car car) {
-        if (Objects.nonNull(file)) {
-            String imagePath = saveFile(file, car.getModelName());
-            car.setImage(imagePath);
-        } else {
-            Car existCar = carRepository.findById(car.getId()).orElseThrow(() -> new CarNotFoundException("car not found id : " + car.getId()));
-        }
-        return carRepository.save(car);
-    }
+       if (file != null && !file.isEmpty()) {
+           car.setActive(car.getActive());
+           car.setIsRented(car.getIsRented());
+           car.setCarStatus(car.getCarStatus());
+
+           String imagePath = saveFile(file, car.getModelName());
+           car.setImage(imagePath);
+       } else {
+           car.setImage(existingcar.getImage());
+       }
+
+       existingcar.setId(car.getId());
+       existingcar.setBrandId(car.getBrandId());
+       existingcar.setModelName(car.getModelName());
+       existingcar.setColor(car.getColor());
+       existingcar.setCarStatus(car.getCarStatus());
+       existingcar.setActive(car.getActive());
+       existingcar.setIsRented(car.getIsRented());
+       existingcar.setCarAvailableStock(car.getCarAvailableStock());
+       existingcar.setGearBox(car.getGearBox());
+       existingcar.setMileage(car.getMileage());
+       existingcar.setDailyPrice(car.getDailyPrice());
+
+       return carRepository.save(existingcar);
+   }
 
     public void deleteCar(Long id) {
         Car car = carRepository.findById(id).orElseThrow(() -> new CarNotFoundException(id + " car is not found"));
