@@ -9,6 +9,7 @@ import com.autorent.rentacar.repository.CarRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +30,7 @@ public class BrandService {
     }
     public List<Brand> getAllBrandList(){
         List <Brand> brandList = brandRepository.findAll();
+        brandList.sort(Comparator.comparing(Brand::getId));
         return brandList;
     }
     public Brand getBrand(Long id){
@@ -41,7 +43,7 @@ public class BrandService {
     public void deleteBrand(Long id){
         Long countBrandOfCar = carRepository.getCountBrandOfCarByBrandId(id);
         if (countBrandOfCar > 0 ){
-            throw  new BrandDeleteException("You can not delete this brand because brand has " +countBrandOfCar + "brands");
+            throw  new BrandDeleteException("You can not delete this brand because brand has " +countBrandOfCar + "car(s)");
         }
         brandRepository.deleteById(id);
     }
