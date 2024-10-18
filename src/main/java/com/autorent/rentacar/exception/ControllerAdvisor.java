@@ -49,5 +49,13 @@ public class ControllerAdvisor extends ResponseEntityExceptionHandler {
         body.put("message", ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);   //Bad_request-->400 olarak görünecek
     }
+    @ExceptionHandler(BrandINameCanNotBeEmptyException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<Object> handleBrandNameCanNotBeEmptyException(BrandINameCanNotBeEmptyException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDate.now());
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);   //Bad_request-->400 olarak görünecek
+    }
 
 }

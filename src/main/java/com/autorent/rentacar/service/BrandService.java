@@ -2,6 +2,7 @@ package com.autorent.rentacar.service;
 
 import com.autorent.rentacar.exception.BrandDeleteException;
 import com.autorent.rentacar.exception.BrandDuplicateException;
+import com.autorent.rentacar.exception.BrandINameCanNotBeEmptyException;
 import com.autorent.rentacar.exception.BrandNotFoundException;
 import com.autorent.rentacar.model.Brand;
 import com.autorent.rentacar.repository.BrandRepository;
@@ -25,6 +26,9 @@ public class BrandService {
         Optional<Brand> optionalBrand = brandRepository.findBrandByName(brand.getName());
         if (optionalBrand.isPresent()){
             throw new BrandDuplicateException("Brand name is already defined : " + brand.getName());
+        }
+        if(brand.getName().isEmpty()){
+            throw new BrandINameCanNotBeEmptyException("Brand name cannot be empty!");
         }
         return brandRepository.save(brand);
     }
