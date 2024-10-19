@@ -33,8 +33,8 @@ public class CarService {
 
         if (Objects.nonNull(file)) {
             String imagePath = saveFile(file, car.getModelName());
-            car.setActive(true); // Araba kullanılabilir
-            car.setIsRented(false); // Araba kiralanmamış
+            car.setActive(true);
+            car.setIsRented(false);
             car.setCarStatus(CarStatus.AVAILABLE);
             car.setImage(imagePath);
         } else {
@@ -60,6 +60,7 @@ public class CarService {
     }
 
     public List<Car> getCarListByBrandId(Long brandId) {
+
         return carRepository.findCarListByBrandId(brandId);
     }
 
