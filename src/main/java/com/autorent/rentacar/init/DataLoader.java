@@ -70,7 +70,7 @@ public class DataLoader implements CommandLineRunner {
         }
 
 
-        if (!brandRepository.existsByName("Renault")) {
+        if (!brandRepository.existsByName("RENAULT")) {
             Brand brand = new Brand();
             brand.setName("Renault");
             brandRepository.save(brand);

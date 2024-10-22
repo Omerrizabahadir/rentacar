@@ -104,22 +104,14 @@ public class CarService {
 
     public void deleteCar(Long id) {
         Car car = carRepository.findById(id).orElseThrow(() -> new CarNotFoundException(id + " car is not found"));
-
-        Path imagePath = Paths.get(car.getImage());
         try {
-            
-            if (Files.notExists(imagePath)) {
-                throw new RuntimeException("Image does not exist: " + car.getImage());
-            }
 
-            Files.delete(imagePath);
+            Files.delete(Paths.get(car.getImage()));
         } catch (IOException e) {
             throw new RuntimeException("IO Exception occurred while deleting image of " + car.getModelName(), e);
         }
         carRepository.deleteById(id);
     }
-
-
     public void activeOrDeActiveToRentalCar(Long id, boolean isActive) {
 
         carRepository.updateCarActive(isActive, id);

@@ -59,13 +59,6 @@ public class CarController {
         return new ResponseEntity<>(carService.updateCar(file, car), HttpStatus.OK);
     }
 
-    @DeleteMapping("{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<Void> deleteCar(@PathVariable("id") Long id) {
-        carService.deleteCar(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
     @PutMapping("active/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> activeToRentalCar(@PathVariable("id") Long id) {
@@ -95,6 +88,12 @@ public class CarController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(availabilityMessage);
         }
         return ResponseEntity.ok("The car can be rented.");
+    }
+    @DeleteMapping("{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<Void> deleteCar(@PathVariable("id") Long id) {
+        carService.deleteCar(id);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 }

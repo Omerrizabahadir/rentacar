@@ -42,6 +42,7 @@ public class BrandService {
 
     }
     public Brand updateBrand(Brand brand){
+
         return brandRepository.save(brand);
     }
     public void deleteBrand(Long id){
