@@ -1,5 +1,6 @@
 package com.autorent.rentacar.service;
 
+import com.autorent.rentacar.dto.CustomerRentalDto;
 import com.autorent.rentacar.dto.RentalCarInfo;
 import com.autorent.rentacar.dto.RentalRequest;
 import com.autorent.rentacar.enums.CarStatus;
@@ -7,9 +8,11 @@ import com.autorent.rentacar.exception.CarAlreadyRentedException;
 import com.autorent.rentacar.exception.CarNotFoundException;
 import com.autorent.rentacar.exception.CustomerNotFoundException;
 import com.autorent.rentacar.exception.InsufficientCarStockException;
+import com.autorent.rentacar.model.Brand;
 import com.autorent.rentacar.model.Car;
 import com.autorent.rentacar.model.Customer;
 import com.autorent.rentacar.model.Rental;
+import com.autorent.rentacar.repository.BrandRepository;
 import com.autorent.rentacar.repository.CarRepository;
 import com.autorent.rentacar.repository.CustomerRepository;
 import com.autorent.rentacar.repository.RentalRepository;
@@ -19,9 +22,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -34,6 +38,8 @@ public class RentalService {
     private CustomerRepository customerRepository;
     @Autowired
     private RentalRepository rentalRepository;
+    @Autowired
+    private BrandRepository brandRepository;
 
     public void checkCarAvailability(Long carId, boolean isActive) {
         Car car = carRepository.findById(carId)
@@ -79,11 +85,7 @@ public class RentalService {
             LocalDateTime userEndRentalDate = startRentalDate.plusDays(rentalDays);
             rental.setEndRentalDate(userEndRentalDate);
 
-
-            long totalRentalDays = ChronoUnit.DAYS.between(startRentalDate.toLocalDate(), userEndRentalDate.toLocalDate());
-
-
-            Double totalPrice = rentalDays * car.getDailyPrice();
+            double totalPrice = rentalDays * car.getDailyPrice();
             rentalTotalCostList.add(totalPrice);
             rental.setTotalPrice(totalPrice);
 
@@ -124,4 +126,28 @@ public class RentalService {
             carRepository.save(car);
         });
     }
+
+    public List<CustomerRentalDto> getRentalsWithCustomerInfo(Long customerId) {
+        List<Rental> rentals = rentalRepository.findByCustomerId(customerId);
+        return rentals.stream().map(rental -> {
+            Optional<Customer> customer = customerRepository.findById(rental.getCustomerId());
+            Optional<Car> car = carRepository.findById(rental.getCarId());
+
+            if (customer.isPresent() && car.isPresent()) {
+                Long brandId = car.get().getBrandId();
+            Optional<Brand> brand = brandRepository.findById(brandId);
+                return new CustomerRentalDto(
+                        rental.getId(),
+                        rental.getCustomerId(),
+                        customer.get().getFirstName(),
+                        customer.get().getLastName(),
+                        brand.map(Brand::getName).orElse("Unknown"),
+                        car.get().getModelName()
+                );
+            } else {
+                return new CustomerRentalDto(rental.getId(), rental.getCustomerId(), "Unknown", "Unknown", "Unknown", "Unknown");
+            }
+        }).collect(Collectors.toList());
+    }
+
 }
