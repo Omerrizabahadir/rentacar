@@ -1,13 +1,11 @@
 package com.autorent.rentacar.service;
 
 import com.autorent.rentacar.dto.CustomerRentalDto;
+import com.autorent.rentacar.dto.PendingRentalDto;
 import com.autorent.rentacar.dto.RentalCarInfo;
 import com.autorent.rentacar.dto.RentalRequest;
 import com.autorent.rentacar.enums.CarStatus;
-import com.autorent.rentacar.exception.CarAlreadyRentedException;
-import com.autorent.rentacar.exception.CarNotFoundException;
-import com.autorent.rentacar.exception.CustomerNotFoundException;
-import com.autorent.rentacar.exception.InsufficientCarStockException;
+import com.autorent.rentacar.exception.*;
 import com.autorent.rentacar.model.Brand;
 import com.autorent.rentacar.model.Car;
 import com.autorent.rentacar.model.Customer;
@@ -95,6 +93,7 @@ public class RentalService {
             rental.setTotalRentalPeriodDays(rentalDays);
             rental.setPickupAddress(rentalRequestInfo.getPickupAddress());
             rental.setReturnAddress(rentalRequestInfo.getReturnAddress());
+            rental.setReturned(false);
 
             if (car.getCarAvailableStock() == 0) {
                 car.setIsRented(true);
@@ -110,6 +109,7 @@ public class RentalService {
 
         return true;
     }
+
 
     private void carUnitStockCheck(List<RentalCarInfo> rentalCarInfoList) {
         rentalCarInfoList.forEach(carInfo -> {
@@ -149,5 +149,44 @@ public class RentalService {
             }
         }).collect(Collectors.toList());
     }
+    // Teslim edilmemiş kiralamaları al
+    public List<PendingRentalDto> getPendingRentals() {
+        return rentalRepository.findByIsReturnedFalse().stream().map(rental -> {
+            Customer customer = customerRepository.findById(rental.getCustomerId())
+                    .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
 
+            Car car = carRepository.findById(rental.getCarId())
+                    .orElseThrow(() -> new CarNotFoundException("Car not found"));
+
+            return new PendingRentalDto(
+                    rental.getId(),
+                    customer.getFirstName() + " " + customer.getLastName(),
+                    car.getModelName(),
+                    rental.getTotalPrice(),
+                    rental.getStartRentalDate(),
+                    rental.getEndRentalDate(),
+                    rental.getPickupAddress(),
+                    rental.getReturnAddress(),
+                    rental.getTotalRentalPeriodDays(),
+                    rental.isReturned()
+            );
+        }).collect(Collectors.toList());
+    }
+
+    // Araç teslim alma işlemi
+    public void returnCar(Long rentalId) {
+        Rental rental = rentalRepository.findById(rentalId)
+                .orElseThrow(() -> new RentalNotFoundException("Rental not found"));
+
+        Car car = carRepository.findById(rental.getCarId())
+                .orElseThrow(() -> new CarNotFoundException("Car not found"));
+
+        car.setIsRented(false); // Araç teslim alındı
+        car.setCarAvailableStock(car.getCarAvailableStock() + rental.getQuantity());
+        carRepository.save(car);
+
+        rental.setReturned(true); // Kiralama durumu güncellendi
+        rentalRepository.save(rental);
+    }
 }
+

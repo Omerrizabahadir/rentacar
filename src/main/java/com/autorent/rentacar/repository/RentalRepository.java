@@ -11,4 +11,6 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
 
 
     List<Rental> findByCustomerId(long customerId);
+
+    List<Rental> findByIsReturnedFalse();
 }

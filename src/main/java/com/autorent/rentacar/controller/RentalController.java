@@ -1,6 +1,7 @@
 package com.autorent.rentacar.controller;
 
 import com.autorent.rentacar.dto.CustomerRentalDto;
+import com.autorent.rentacar.dto.PendingRentalDto;
 import com.autorent.rentacar.dto.RentalRequest;
 import com.autorent.rentacar.service.RentalService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,4 +30,17 @@ public class RentalController {
 
         return new ResponseEntity<>(rentalService.getRentalsWithCustomerInfo(customerId),HttpStatus.OK);
     }
+    @GetMapping("/pending")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<List<PendingRentalDto>> getPendingRentals() {
+        return new ResponseEntity<>(rentalService.getPendingRentals(), HttpStatus.OK);
+    }
+
+    @PutMapping("/return/{rentalId}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<Void> returnCar(@PathVariable Long rentalId) {
+        rentalService.returnCar(rentalId);
+        return ResponseEntity.ok().build();
+    }
 }
+

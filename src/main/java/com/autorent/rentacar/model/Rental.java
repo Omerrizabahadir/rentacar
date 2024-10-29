@@ -40,4 +40,7 @@ public class Rental {
     private String returnAddress;
 
     private int quantity;
+
+    @Column(name = "is_returned")
+    private boolean isReturned;
 }
