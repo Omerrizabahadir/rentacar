@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 @Service
 public class RentalService {
 
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
     @Autowired
     private CarRepository carRepository;
     @Autowired
@@ -38,6 +37,9 @@ public class RentalService {
     private RentalRepository rentalRepository;
     @Autowired
     private BrandRepository brandRepository;
+
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+
 
     public void checkCarAvailability(Long carId, boolean isActive) {
         Car car = carRepository.findById(carId)
@@ -142,10 +144,29 @@ public class RentalService {
                         customer.get().getFirstName(),
                         customer.get().getLastName(),
                         brand.map(Brand::getName).orElse("Unknown"),
-                        car.get().getModelName()
+                        car.get().getModelName(),
+                        rental.getTotalPrice(),
+                        rental.getStartRentalDate(),
+                        rental.getEndRentalDate(),
+                        rental.getTotalRentalPeriodDays(),
+                        rental.getPickupAddress(),
+                        rental.getReturnAddress()
+
                 );
             } else {
-                return new CustomerRentalDto(rental.getId(), rental.getCustomerId(), "Unknown", "Unknown", "Unknown", "Unknown");
+                return new CustomerRentalDto(rental.getId(),
+                        rental.getCustomerId(),
+                        "Unknown",
+                        "Unknown",
+                        "Unknown",
+                        "Unknown",
+                        null,
+                        null,
+                        null,
+                        rental.getTotalRentalPeriodDays(),
+                        "Unknown",
+                        "Unknown"
+                        );
             }
         }).collect(Collectors.toList());
     }
@@ -158,9 +179,14 @@ public class RentalService {
             Car car = carRepository.findById(rental.getCarId())
                     .orElseThrow(() -> new CarNotFoundException("Car not found"));
 
+            String formattedStartDate = rental.getStartRentalDate() != null ? rental.getStartRentalDate().format(formatter) : "Bilinmiyor";
+            String formattedEndDate = rental.getEndRentalDate() != null ? rental.getEndRentalDate().format(formatter) : "Bilinmiyor";
+
+
             return new PendingRentalDto(
                     rental.getId(),
-                    customer.getFirstName() + " " + customer.getLastName(),
+                    customer.getFirstName(),
+                    customer.getLastName(),
                     car.getModelName(),
                     rental.getTotalPrice(),
                     rental.getStartRentalDate(),

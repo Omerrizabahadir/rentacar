@@ -10,9 +10,10 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 public class PendingRentalDto {
-    private Long rentalId;
-    private String customerName;
-    private String carModel;
+    private Long id;
+    private String firstName;
+    private String lastName;
+    private String modelName;
     private Double totalPrice;
     private LocalDateTime startRentalDate;
     private LocalDateTime endRentalDate;
