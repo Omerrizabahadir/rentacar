@@ -117,7 +117,7 @@ public class RentalService {
 public Boolean rent(RentalRequest rentalRequest) {
     log.info("Rental request time {} customer :{}", LocalDateTime.now(), rentalRequest.getCustomerId());
 
-    LocalDateTime startRentalDate = LocalDateTime.now();
+
 
     for (RentalCarInfo rentalCarInfo : rentalRequest.getRentalList()) {
         Car car = carRepository.findById(rentalCarInfo.getCarId())
@@ -136,6 +136,11 @@ public Boolean rent(RentalRequest rentalRequest) {
         Car car = carRepository.findById(rentalRequestInfo.getCarId())
                 .orElseThrow(() -> new CarNotFoundException("Car not found, id : " + rentalRequestInfo.getCarId()));
 
+        // Start rental date is now set from customer's input
+        LocalDateTime startRentalDate = rentalRequestInfo.getStartRentalDate();
+        if (startRentalDate == null) {
+            throw new IllegalArgumentException("Start rental date cannot be null for car ID: " + rentalRequestInfo.getCarId());
+        }
         // Start rental date is set to now
         rental.setStartRentalDate(startRentalDate);
 
