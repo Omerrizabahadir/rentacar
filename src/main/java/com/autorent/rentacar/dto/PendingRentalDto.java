@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 public class PendingRentalDto {
-    private Long id;
+    private Long rentalId;
     private String firstName;
     private String lastName;
     private String brandName;
