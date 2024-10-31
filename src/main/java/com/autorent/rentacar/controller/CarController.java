@@ -89,7 +89,7 @@ public class CarController {
         }
         return ResponseEntity.ok("The car can be rented.");
     }
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteCar(@PathVariable("id") Long id) {
         carService.deleteCar(id);

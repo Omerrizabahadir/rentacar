@@ -1,6 +1,5 @@
 package com.autorent.rentacar.controller;
 
-import com.autorent.rentacar.dto.CustomerRentalDto;
 import com.autorent.rentacar.dto.PendingRentalDto;
 import com.autorent.rentacar.dto.RentalRequest;
 import com.autorent.rentacar.service.RentalService;
