@@ -1,5 +1,7 @@
 package com.autorent.rentacar.dto;
 
+import com.autorent.rentacar.model.Brand;
+import com.autorent.rentacar.model.Car;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,12 +15,11 @@ public class PendingRentalDto {
     private Long id;
     private String firstName;
     private String lastName;
+    private String brandName;
     private String modelName;
-    private Double totalPrice;
     private LocalDateTime startRentalDate;
     private LocalDateTime endRentalDate;
     private String pickupAddress;
     private String returnAddress;
-    private Long totalPeriodDays;
     private boolean isReturned;
 }

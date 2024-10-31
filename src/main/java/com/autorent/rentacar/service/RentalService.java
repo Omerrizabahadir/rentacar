@@ -247,6 +247,9 @@ public Boolean rent(RentalRequest rentalRequest) {
             Car car = carRepository.findById(rental.getCarId())
                     .orElseThrow(() -> new CarNotFoundException("Car not found"));
 
+            String brandName = brandRepository.findById(car.getBrandId())
+                    .map(Brand::getName).orElse("Unknown");
+
             String formattedStartDate = rental.getStartRentalDate() != null ? rental.getStartRentalDate().format(formatter) : "Bilinmiyor";
             String formattedEndDate = rental.getEndRentalDate() != null ? rental.getEndRentalDate().format(formatter) : "Bilinmiyor";
 
@@ -255,13 +258,12 @@ public Boolean rent(RentalRequest rentalRequest) {
                     rental.getId(),
                     customer.getFirstName(),
                     customer.getLastName(),
+                    brandName,
                     car.getModelName(),
-                    rental.getTotalPrice(),
                     rental.getStartRentalDate(),
                     rental.getEndRentalDate(),
                     rental.getPickupAddress(),
                     rental.getReturnAddress(),
-                    rental.getTotalRentalPeriodDays(),
                     rental.isReturned()
             );
         }).collect(Collectors.toList());
