@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -57,7 +58,7 @@ public class RentalService {
             throw new CarAlreadyRentedException("The car you chose was rented by someone else");
         }
     }
-
+/*
     public Boolean rent(RentalRequest rentalRequest) {
         log.info("Rental request time {} customer :{}", LocalDateTime.now(), rentalRequest.getCustomerId());
 
@@ -81,10 +82,12 @@ public class RentalService {
             LocalDateTime startRentalDate = LocalDateTime.now();
             rental.setStartRentalDate(startRentalDate);
 
-            long rentalDays = rentalRequestInfo.getRentalPeriod();
+            long rentalDays = rentalRequestInfo.getTotalRentalPeriodDays();
             LocalDateTime userEndRentalDate = startRentalDate.plusDays(rentalDays);
             rental.setEndRentalDate(userEndRentalDate);
+            rental.setTotalRentalPeriodDays(rentalDays);
 
+            //TODO
             double totalPrice = rentalDays * car.getDailyPrice();
             rentalTotalCostList.add(totalPrice);
             rental.setTotalPrice(totalPrice);
@@ -92,7 +95,6 @@ public class RentalService {
             rental.setCarId(rentalRequestInfo.getCarId());
             rental.setCustomerId(rentalRequest.getCustomerId());
             rental.setQuantity(rentalRequestInfo.getQuantity());
-            rental.setTotalRentalPeriodDays(rentalDays);
             rental.setPickupAddress(rentalRequestInfo.getPickupAddress());
             rental.setReturnAddress(rentalRequestInfo.getReturnAddress());
             rental.setReturned(false);
@@ -111,7 +113,67 @@ public class RentalService {
 
         return true;
     }
+*/
+public Boolean rent(RentalRequest rentalRequest) {
+    log.info("Rental request time {} customer :{}", LocalDateTime.now(), rentalRequest.getCustomerId());
 
+    LocalDateTime startRentalDate = LocalDateTime.now();
+
+    for (RentalCarInfo rentalCarInfo : rentalRequest.getRentalList()) {
+        Car car = carRepository.findById(rentalCarInfo.getCarId())
+                .orElseThrow(() -> new CarNotFoundException("Car not found, id : " + rentalCarInfo.getCarId()));
+
+        if (car.getIsRented()) {
+            throw new InsufficientCarStockException("The car with id " + rentalCarInfo.getCarId() + " is already rented.");
+        }
+    }
+
+    carUnitStockCheck(rentalRequest.getRentalList());
+
+    List<Double> rentalTotalCostList = new ArrayList<>();
+    rentalRequest.getRentalList().forEach(rentalRequestInfo -> {
+        Rental rental = new Rental();
+        Car car = carRepository.findById(rentalRequestInfo.getCarId())
+                .orElseThrow(() -> new CarNotFoundException("Car not found, id : " + rentalRequestInfo.getCarId()));
+
+        // Start rental date is set to now
+        rental.setStartRentalDate(startRentalDate);
+
+        // endRentalDate, her döngüde rentalRequestInfo'dan alınıyor
+        LocalDateTime endRentalDate = rentalRequestInfo.getEndRentalDate();
+        if (endRentalDate == null) {
+            throw new IllegalArgumentException("End rental date cannot be null for car ID: " + rentalRequestInfo.getCarId());
+        }
+        rental.setEndRentalDate(endRentalDate);
+
+        long rentalDays = ChronoUnit.DAYS.between(startRentalDate, endRentalDate);
+        rental.setTotalRentalPeriodDays(rentalDays);
+
+        double totalPrice = rentalDays * car.getDailyPrice();
+        rentalTotalCostList.add(totalPrice);
+        rental.setTotalPrice(totalPrice);
+
+        rental.setCarId(rentalRequestInfo.getCarId());
+        rental.setCustomerId(rentalRequest.getCustomerId());
+        rental.setQuantity(rentalRequestInfo.getQuantity());
+        rental.setPickupAddress(rentalRequestInfo.getPickupAddress());
+        rental.setReturnAddress(rentalRequestInfo.getReturnAddress());
+        rental.setReturned(false);
+
+        if (car.getCarAvailableStock() == 0) {
+            car.setIsRented(true);
+            car.setActive(false);
+            car.setCarStatus(CarStatus.RENTED);
+        }
+        rentalRepository.save(rental);
+        carRepository.save(car);
+    });
+
+    Customer customer = customerRepository.findById(rentalRequest.getCustomerId())
+            .orElseThrow(() -> new CustomerNotFoundException(rentalRequest.getCustomerId() + " customer not found!"));
+
+    return true;
+}
 
     private void carUnitStockCheck(List<RentalCarInfo> rentalCarInfoList) {
         rentalCarInfoList.forEach(carInfo -> {
@@ -138,6 +200,7 @@ public class RentalService {
             if (customer.isPresent() && car.isPresent()) {
                 Long brandId = car.get().getBrandId();
             Optional<Brand> brand = brandRepository.findById(brandId);
+
                 return new CustomerRentalDto(
                         rental.getId(),
                         rental.getCustomerId(),
@@ -209,7 +272,9 @@ public class RentalService {
 
         car.setIsRented(false); // Araç teslim alındı
         car.setCarAvailableStock(car.getCarAvailableStock() + rental.getQuantity());
+        car.setCarStatus(CarStatus.AVAILABLE);
         carRepository.save(car);
+        car.setActive(true);
 
         rental.setReturned(true); // Kiralama durumu güncellendi
         rentalRepository.save(rental);

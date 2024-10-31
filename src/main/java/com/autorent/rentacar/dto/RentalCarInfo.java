@@ -14,7 +14,7 @@ public class RentalCarInfo {
     private  int quantity;
     private LocalDateTime startRentalDate;
     private LocalDateTime endRentalDate;
-    private long rentalPeriod;
+    private long totalRentalPeriodDays;
     private String pickupAddress;
     private String returnAddress;
 
