@@ -1,5 +1,6 @@
 package com.autorent.rentacar.repository;
 
+import com.autorent.rentacar.model.Brand;
 import com.autorent.rentacar.model.Car;
 import com.autorent.rentacar.model.Rental;
 import jakarta.transaction.Transactional;
@@ -38,4 +39,8 @@ public interface CarRepository extends JpaRepository<Car, Long> {
 
     @Query("SELECT c FROM Car c WHERE c.id = :id")
     Optional<Car> getActiveCarById(@Param("id")Long id);
+
+    List<Car> findCarsByBrandId(Long brandId);
+
+
 }

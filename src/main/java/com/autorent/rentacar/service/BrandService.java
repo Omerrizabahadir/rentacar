@@ -5,6 +5,7 @@ import com.autorent.rentacar.exception.BrandDuplicateException;
 import com.autorent.rentacar.exception.BrandNameCanNotBeEmptyExceptıon;
 import com.autorent.rentacar.exception.BrandNotFoundException;
 import com.autorent.rentacar.model.Brand;
+import com.autorent.rentacar.model.Car;
 import com.autorent.rentacar.repository.BrandRepository;
 import com.autorent.rentacar.repository.CarRepository;
 import lombok.RequiredArgsConstructor;
@@ -58,4 +59,10 @@ public class BrandService {
         }
         brandRepository.deleteById(id);
     }
+    public List<Car> getCarsByBrandId(Long brandId) {
+        Brand brand = brandRepository.findById(brandId)
+                .orElseThrow(() -> new BrandNotFoundException("Brand not found with id: " + brandId));
+        return carRepository.findCarsByBrandId(brandId);
+    }
 }
+

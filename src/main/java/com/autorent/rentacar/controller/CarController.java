@@ -95,6 +95,9 @@ public class CarController {
         carService.deleteCar(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
-
+    @GetMapping("/image")
+    public List<String> getCarImages() {
+        return carService.getCarImages();
+    }
 }
 

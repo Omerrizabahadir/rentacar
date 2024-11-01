@@ -9,11 +9,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -120,5 +122,11 @@ public class CarService {
     public String checkIfCarRented(Long carId) {
         Car car = carRepository.findById(carId).orElseThrow(() -> new CarNotFoundException("Car not found"));
         return car.getIsRented() ? "car has been rented." : "car can be rented.";
+    }
+    // Araç görsellerini almak için yöntem
+    public List<String> getCarImages() {
+        File dir = new File(UPLOAD_DIR);
+        String[] images = dir.list((d, name) -> name.endsWith(".jpg") || name.endsWith(".png"));
+        return images != null ? Arrays.asList(images) : List.of();
     }
 }

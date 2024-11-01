@@ -1,6 +1,7 @@
 package com.autorent.rentacar.controller;
 
 import com.autorent.rentacar.model.Brand;
+import com.autorent.rentacar.model.Car;
 import com.autorent.rentacar.service.BrandService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -42,5 +43,11 @@ public class BrandController {
     public ResponseEntity<Void> deleteBrand(@PathVariable("id") Long id){
         brandService.deleteBrand(id);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+    @GetMapping("/{brandId}/cars")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
+    public ResponseEntity<List<Car>> getCarsByBrand(@PathVariable Long brandId){
+        List<Car> cars = brandService.getCarsByBrandId(brandId);
+        return new ResponseEntity<>(cars, HttpStatus.OK);
     }
 }
