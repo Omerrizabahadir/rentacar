@@ -44,6 +44,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Bean
     public CorsFilter corsFilter() {
+
         return new CorsFilter(corsConfigurationSource());
     }
 }

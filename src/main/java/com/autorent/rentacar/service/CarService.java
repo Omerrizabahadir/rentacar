@@ -46,7 +46,7 @@ public class CarService {
         return carRepository.save(car);
     }
 
-    private String saveFile(MultipartFile file, String carName) {
+    protected String saveFile(MultipartFile file, String carName) {
         carName = carName.replaceAll("\\s", "");
         String fileName = carName + "." + StringUtils.getFilenameExtension(file.getOriginalFilename());
         Path uploadPath = Path.of(UPLOAD_DIR);
@@ -71,6 +71,7 @@ public class CarService {
     }
 
     public List<Car> getAllCarList() {
+
         return carRepository.getAllCarList();
     }
     
@@ -123,7 +124,7 @@ public class CarService {
         Car car = carRepository.findById(carId).orElseThrow(() -> new CarNotFoundException("Car not found"));
         return car.getIsRented() ? "car has been rented." : "car can be rented.";
     }
-    // Araç görsellerini almak için yöntem
+
     public List<String> getCarImages() {
         File dir = new File(UPLOAD_DIR);
         String[] images = dir.list((d, name) -> name.endsWith(".jpg") || name.endsWith(".png"));

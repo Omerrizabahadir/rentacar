@@ -22,6 +22,7 @@ public class Customer {
 
     private Address address;
 
+    @Column(nullable = false,unique = true)
     private String email;
 
     private String password;

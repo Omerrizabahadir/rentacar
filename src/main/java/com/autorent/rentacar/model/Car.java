@@ -4,6 +4,7 @@ import com.autorent.rentacar.enums.CarStatus;
 import com.autorent.rentacar.enums.Color;
 import com.autorent.rentacar.enums.GearBox;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
