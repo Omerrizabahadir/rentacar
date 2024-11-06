@@ -11,8 +11,10 @@ import com.autorent.rentacar.model.Customer;
 import com.autorent.rentacar.repository.BrandRepository;
 import com.autorent.rentacar.repository.CarRepository;
 import com.autorent.rentacar.repository.CustomerRepository;
+import com.autorent.rentacar.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -40,6 +42,10 @@ public class DataLoader implements CommandLineRunner {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private EmailService emailService;
+
 
     private static final String UPLOAD_DIR = "uploads";
 
@@ -71,9 +77,10 @@ public class DataLoader implements CommandLineRunner {
             adminUser.setRoles("ROLE_ADMIN");
             adminUser.setAddress(address1);
             adminUser.setEmail("omrbahadir@gmail.com");
-            adminUser.setPassword(passwordEncoder.encode("123456"));
+            adminUser.setPassword(passwordEncoder.encode("Omer03!?"));
 
             customerRepository.save(adminUser);
+            emailService.sendWelcomeMail(adminUser.getEmail(), adminUser.getFirstName(), adminUser.getLastName());
         }
 
         if (!customerRepository.existsByEmail("omrbahadir@hotmail.com")) {
@@ -86,11 +93,14 @@ public class DataLoader implements CommandLineRunner {
             clientUser.setFirstName("Ömer Rıza");
             clientUser.setLastName("Bahadır");
             clientUser.setEmail("omrbahadir@hotmail.com");
-            clientUser.setPassword(passwordEncoder.encode("123456"));
+            clientUser.setPassword(passwordEncoder.encode("Omer14/!"));
             clientUser.setRoles("ROLE_USER");
             clientUser.setAddress(address2);
 
             customerRepository.save(clientUser);
+
+           emailService.sendWelcomeMail(clientUser.getEmail(), clientUser.getFirstName(), clientUser.getLastName());
+
         }
     }
 

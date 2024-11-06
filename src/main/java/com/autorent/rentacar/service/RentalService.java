@@ -19,6 +19,7 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,7 @@ public class RentalService {
     private CustomerRepository customerRepository;
     @Autowired
     private RentalRepository rentalRepository;
- @Autowired
+    @Autowired
     private JavaMailSender mailSender;
     @Value("${spring.mail.username}")
     private String emailFrom;
@@ -249,29 +250,27 @@ public class RentalService {
         rentalRepository.save(rental);
     }
 
-    public void sendEmail(String emailTo, String firstName, double totalCost) {
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper;
-
+    public void sendEmail(String toEmail, String customerName, Double totalAmount) {
         try {
-            helper = new MimeMessageHelper(message, true);
-            helper.setFrom(emailFrom, "Autorent");
-            helper.setTo(emailTo); // Burayı emailTo ile değiştirin
-            helper.setSubject("Merhaba " + firstName + ", Kiralama İsteğiniz İşleme Alındı");
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(emailFrom);
+            message.setTo("omrbahadir@gmail.com");
+            message.setSubject("Rental Confirmation");
+            message.setText("Dear " + customerName + ",\n\n" +
+                    "Your rental has been successfully processed.\n\n" +
+                    "Total Amount: $" + totalAmount + "\n\n" +
+                    "Thank you for choosing us!\n\n" +
+                    "Best regards,\n" +
+                    "Your Car Rental Team");
 
-            String content = "<p>Merhaba " + firstName + "</p><p>Kiralamanızın toplam maliyeti: " + totalCost + "</p>";
-            helper.setText(content, true);
-
-            mailSender.send(message);
-            log.info("E-posta {} adresine gönderildi", emailTo);
-        } catch (MessagingException e) {
-            log.error("E-posta {} adresine gönderilemedi: {}", emailTo, e.getMessage());
-            throw new RuntimeException("E-posta gönderilemedi", e);
-        } catch (UnsupportedEncodingException e) {
-            log.error("E-posta kodlama hatası: {}", e.getMessage());
-            throw new RuntimeException("E-posta kodlama hatası", e);
+            mailSender.send(message);  // E-posta gönderimi
+            log.info("Email sent to: " + toEmail);
+        } catch (Exception e) {
+            log.error("Error sending email: " + e.getMessage());
+            throw new RuntimeException("Error sending email", e);
         }
     }
+
 }
 
 
