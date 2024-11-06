@@ -131,10 +131,7 @@ public class RentalService {
 
 
         Double orderTotalCost = rentalTotalCostList.stream().mapToDouble(Double::doubleValue).sum();
-        sendEmail(customer.getEmail(), customer.getFirstName(), orderTotalCost);
-
-
-
+        sendMail(customer.getEmail(), customer.getFirstName(), orderTotalCost);
         return true;
     }
 
@@ -250,27 +247,30 @@ public class RentalService {
         rentalRepository.save(rental);
     }
 
-    public void sendEmail(String toEmail, String customerName, Double totalAmount) {
+    public void sendMail(String emailTo, String firstName, double totalCost) {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = null;
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(emailFrom);
-            message.setTo("omrbahadir@gmail.com");
-            message.setSubject("Rental Confirmation");
-            message.setText("Dear " + customerName + ",\n\n" +
-                    "Your rental has been successfully processed.\n\n" +
-                    "Total Amount: $" + totalAmount + "\n\n" +
-                    "Thank you for choosing us!\n\n" +
-                    "Best regards,\n" +
-                    "Your Car Rental Team");
+            helper = new MimeMessageHelper(message, true);
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
 
-            mailSender.send(message);  // E-posta gönderimi
-            log.info("Email sent to: " + toEmail);
-        } catch (Exception e) {
-            log.error("Error sending email: " + e.getMessage());
-            throw new RuntimeException("Error sending email", e);
+        try {
+            helper.setFrom(emailFrom, "Autorent");
+            helper.setTo("omrbahadir@gmail.com");
+            helper.setSubject("Merhaba " + firstName + ", Kiralama İsteğiniz İşleme Alındı");
+
+            String content = "<p>Merhaba " + firstName + "</p><p>Kiraladığınız aracın toplam maliyeti :" + totalCost + "</p>";
+            helper.setText(content, true);
+
+            mailSender.send(message);
+            log.info("E-posta {} adresine gönderildi", emailTo);
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            log.error("E-posta {} adresine gönderilemedi: {}", emailTo, e.getMessage());
+            throw new RuntimeException("E-posta gönderilemedi", e);
         }
     }
-
 }
 
 
