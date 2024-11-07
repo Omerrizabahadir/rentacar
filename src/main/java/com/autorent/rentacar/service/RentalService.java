@@ -104,7 +104,7 @@ public class RentalService {
             long rentalDays = ChronoUnit.DAYS.between(startRentalDate, endRentalDate);
             rental.setTotalRentalPeriodDays(rentalDays);
 
-            double totalPrice = rentalDays * car.getDailyPrice();
+            double totalPrice = rentalDays * car.getDailyPrice() * rentalRequestInfo.getQuantity();
             rentalTotalCostList.add(totalPrice);
             rental.setTotalPrice(totalPrice);
 
