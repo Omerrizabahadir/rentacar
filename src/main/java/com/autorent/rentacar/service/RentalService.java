@@ -86,12 +86,14 @@ public class RentalService {
             Car car = carRepository.findById(rentalRequestInfo.getCarId())
                     .orElseThrow(() -> new CarNotFoundException("Car not found, id : " + rentalRequestInfo.getCarId()));
 
-            // Start rental date is now set from customer's input
+            // Start rental date kontrolü - Geçmiş bir tarih olamaz
             LocalDateTime startRentalDate = rentalRequestInfo.getStartRentalDate();
             if (startRentalDate == null) {
                 throw new IllegalArgumentException("Start rental date cannot be null for car ID: " + rentalRequestInfo.getCarId());
             }
-            // Start rental date is set to now
+            if (startRentalDate.isBefore(LocalDateTime.now())) {
+                throw new IllegalArgumentException("Start rental date cannot be in the past for car ID: " + rentalRequestInfo.getCarId());
+            }
             rental.setStartRentalDate(startRentalDate);
 
             // endRentalDate, her döngüde rentalRequestInfo'dan alınıyor
@@ -247,16 +249,12 @@ public class RentalService {
 
     public void sendMail(String emailTo, String firstName, double totalCost) {
         MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = null;
         try {
-            helper = new MimeMessageHelper(message, true);
-        } catch (MessagingException e) {
-            throw new RuntimeException(e);
-        }
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
-        try {
+            // `emailFrom` konfigürasyondan ayarlanacak
             helper.setFrom(emailFrom, "Autorent");
-            helper.setTo("omrbahadir@gmail.com");
+            helper.setTo(emailTo);
             helper.setSubject("Merhaba " + firstName + ", Kiralama İsteğiniz İşleme Alındı");
 
             String content = "<p>Merhaba " + firstName + "</p><p>Kiraladığınız aracın toplam maliyeti :" + totalCost + "</p>";
