@@ -1,3 +1,0 @@
-com/autorent/rentacar/config/SecurityConfig.class
-com/autorent/rentacar/filter/JwtAuthFilter.class
-com/autorent/rentacar/RentacarApplication.class
