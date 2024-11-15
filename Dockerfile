@@ -1,4 +1,4 @@
-FROM jelastic/maven:3.9.5-openjdk-21 AS MAVEN_BUILD
+FROM jelastic/maven:3.9.5-openjdk-21 AS maven_build
 
 LABEL "Author"="Ömer Rıza Bahadır"
 

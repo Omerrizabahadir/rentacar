@@ -13,7 +13,7 @@ services:
       - "5434:5432"
 
   backend:
-    image: omerriza/rentacar
+    image: omerriza/rentacar         #omerriza/rentacar-backend  #dockerhubtaki "docker pull omerriza/rentacar-backend:latest"   -> bundan bunu->omerriza/rentacar-backend alıp image a koy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/rentacar
       SPRING_DATASOURCE_USERNAME: postgres
